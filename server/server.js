@@ -175,6 +175,9 @@ server.get('/auth/resend/confirm', auth.resendConfirmationEmail);
 server.get('/auth/google', auth.googleAuth);
 server.get('/auth/google/callback', auth.googleReturn);
 
+// VMT
+server.get('/api/vmt/rooms/:id', path.validateId(), api.get.vmtRoom);
+
 //API CALLS
 //ALL GET REQUESTS
 server.get('/api/users', api.get.users);
