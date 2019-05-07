@@ -32,7 +32,12 @@
         <div class="response-users">
           <p>
             <span class="response-label">To:</span>
-            <span class="response-value recipient">{{displayResponse.recipient.username}}
+            <span class="response-value recipient">
+              {{#if displayResponse.recipient}}
+                {{displayResponse.recipient.username}}
+              {{else}}
+                {{submission.student}}
+              {{/if}}
             </span>
             {{#if showRecipientReadUnread}}
               <span class="response-read-unread"><i title={{recipientReadUnreadIcon.title}} class={{recipientReadUnreadIcon.className}}></i></span>

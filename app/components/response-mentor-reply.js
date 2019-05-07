@@ -33,8 +33,8 @@ Encompass.ResponseMentorReplyComponent = Ember.Component.extend(Encompass.Curren
   }.property('displayResponse.status'),
 
   showStatus: function() {
-    return this.get('canApprove') || this.get('isOwnMentorReply');
-  }.property('canApprove', 'isOwnMentorReply'),
+    return this.get('displayResponse.status') && this.get('canApprove') || this.get('isOwnMentorReply');
+  }.property('canApprove', 'isOwnMentorReply', 'displayResponse.status'),
 
   newReplyStatus: function() {
     if (this.get('canDirectSend')) {
