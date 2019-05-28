@@ -1,0 +1,62 @@
+
+<div class ="org-info-section name">
+  {{#if isEditing}}
+    {{input type="text" value=updatedOrgName}}
+  {{else}}
+    <h3>{{model.name}}</h3>
+      {{#if canEdit}}
+        <i {{action "beginEditing"}} class="fas fa-edit"></i>
+      {{/if}}
+  {{/if}}
+</div>
+<div class="org-info-section pdadmins">
+  <h5>PD Admins</h5>
+  <ul>
+    {{#each pdAdmins as |pdAdmin|}}
+    <li>
+      {{#link-to 'user' pdAdmin.username}}{{pdAdmin.username}}{{/link-to}}
+    </li>
+    {{else}}
+      This organization has not yet been assigned a PD Admin.
+      Assign now.
+    {{/each}}
+  </ul>
+</div>
+<div class="org-info-section members">
+  <h5>Members</h5>
+  <ul class="items">
+    {{#each model.members as |member|}}
+    <li class="item">
+      {{#link-to 'user' member.username}}{{member.username}}{{/link-to}}
+      {{#if isEditing}}
+      <i {{action remove}} class="fas fa-minus"></i>
+      {{/if}}
+    </li>
+    {{else}}
+      This organization does not have any members yet. Add some now.
+    {{/each}}
+  </ul>
+  {{#if isEditing}}
+  {{selectize-input
+    store=store
+    inputId="select-add-member"
+    maxItems=20
+    initialOptions=initialMemberOptions
+    selectedItemsHash=existingMemberIdHash
+    onItemAdd=(action "updateMembersToAdd")
+    model="user"
+    isAsync=true
+    labelField="username"
+    searchField="username"
+    valueField="id"
+    queryParamsKey="usernameSearch"
+  }}
+  {{/if}}
+</div>
+
+{{#if isEditing}}
+  <div class="org-info-section buttons button-row">
+    <button {{action "stopEditing"}} class="primary-button cancel-button">Cancel</button>
+    <button {{action "saveEdits"}} class="primary-button">Save</button>
+  </div>
+{{/if}}

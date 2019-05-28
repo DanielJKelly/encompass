@@ -1,0 +1,34 @@
+<div class="org-container-flex-item side">
+  <div class = "side-flex-item header">
+    <h3>Organizations</h3>
+    {{#link-to 'organizations.new' class="new-link-btn"}}
+      <span class="btn-text">Create</span>
+      <span class="btn-icon"><i class="fas fa-plus"></i></span>
+    {{/link-to}}
+  </div>
+  <div class="side-flex-item search">
+ {{search-bar
+    basePlaceholder="Search organizations"
+  }}
+  </div>
+  <div class="side-flex-item filter-sort">
+    <div class="filter-by">
+      <span class="fs-label filter">Filter</span><i class="fas fa-filter"></i>
+
+    </div>
+    <div class="sort-by">
+      <span class="fs-label sort">Sort By</span><i class="fas fa-filter"></i>
+
+    </div>
+  </div>
+  <div class="side-flex-item display-description">
+    <p>Found {{model.length}} organizations</p>
+  </div>
+  <div class="side-flex-item list">
+  {{org-list store=store orgs=model}}
+  </div>
+</div>
+
+<div class="org-container-flex-item outlet">
+  {{outlet}}
+</div>

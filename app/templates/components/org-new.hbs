@@ -1,0 +1,46 @@
+<div class="org-new-flex-item header">
+  <h1>Create New Organization</h1>
+</div>
+
+<div class="org-new-flex-item form">
+  <div class="flex-form-row org-name">
+    <label>Organization Name
+    <span class="required-star">*</span>
+    <span
+        class="info-text-tip simptip-position-right simptip-multiline simptip-smooth"
+        data-tooltip="Each organization must have a unique name.">
+        <i class="fas fa-info-circle info-icon"></i>
+      </span>
+    </label>
+      <div class="input org-name">
+      {{input type="text" value=newOrgName placeholder="Enter a name for the new organization"}}
+      </div>
+      <div class="flex-form-row error">
+      {{#if invalidNameError}}
+        {{error-box error=invalidNameError resetError=(action (mut invalidNameError) null) showDismiss=true }}
+      {{/if}}
+      </div>
+  </div>
+  <div class="flex-form-row org-pdadmin">
+    <label>Pd Admin
+      <span
+        class="info-text-tip simptip-position-right simptip-multiline simptip-smooth"
+        data-tooltip="Pd Admins act as admins for their respective organizations.">
+        <i class="fas fa-info-circle info-icon"></i>
+      </span>
+    </label>
+    <div class="input pdadmin">
+      {{selectize-input inputId="select-pdadmins"}}
+
+    </div>
+  </div>
+  <div class = "flex-form-row button-row buttons">
+    <button {{action "create"}} class="primary-button">Create</button>
+    <button {{action "cancelCreation"}} class="primary-button cancel-button">Cancel</button>
+  </div>
+  <div class = "flex-form-row errors">
+    {{#each creationErrors as |e| }}
+      {{error-box error=e showDismiss=true resetError=(action "removeErrorFromArray" "creationErrors" e)}}
+    {{/each}}
+  </div>
+</div>

@@ -1,0 +1,6 @@
+{{#if currentUser.isAuthorized}}
+  <h1>Welcome to the Organizations Page</h1>
+  <p>Click on an organization to see more info about their account and edit them</p>
+  <p class="or">Or</p>
+  {{#link-to 'organizations.new' id="org-new-link" class="new-link-btn"}}<span>Create New Organization</span>{{/link-to}}
+{{/if}}
