@@ -3,10 +3,6 @@
   * @description This is the API for organization based requests
   * @author Daniel Kelly
 */
-/* jshint ignore:start */
-
-
-const logger = require('log4js').getLogger('server');
 const models = require('../schemas');
 const userAuth = require('../../middleware/userAuth');
 const utils = require('../../middleware/requestHandler');
@@ -31,24 +27,18 @@ const getOrganizations = async function(req, res, next) {
   //const user = userAuth.requireUser(req);
   try {
     const sortBy = req.query.sortBy;
-    let organizations = await models.Organization.find({isTrashed: false});
 
+    let organizations = await models.Organization.find({isTrashed: false}).lean().exec();
 
     if (sortBy === 'members') {
       // return orgs sorted by member count descending
-      let tuples = await Promise.all(organizations.map((org) => {
-        return org.getMemberCount(org._id).then((count) => {
-          return [org, count];
-        });
-      }));
-
-      let sorted = tuples.sort((a, b) => {
-        return b[1] - a[1];
+      organizations = organizations.sort((a, b) => {
+        return b.members.length - a.members.length;
       });
-      organizations = sorted.map(t => t[0]);
+
     }
 
-    const data = {'organizations': organizations};
+    const data = { organizations };
     return utils.sendResponse(res, data);
   }catch(err) {
       console.error(`Error getOrgMembers: ${err}`);
@@ -69,19 +59,28 @@ const getOrganizations = async function(req, res, next) {
   * @throws {RestError} Something? went wrong
 */
 
-const getOrganization = (req, res, next) => {
-  models.Organization.findById(req.params.id)
-  .exec((err, organization) => {
-    if (err) {
-      logger.error(err);
-      return utils.sendError.InternalError(err, res);
-    }
+const getOrganization = async (req, res, next) => {
+
+  try {
+
+    let organization = await models.Organization.findById(req.params.id).lean().exec();
+
     if (!organization || organization.isTrashed) {
       return utils.sendResponse(res, null);
     }
-    const data = {'organization': organization};
+
+    let data = {
+      organization,
+    };
+
     utils.sendResponse(res, data);
-  });
+
+  }catch(err) {
+    console.error(`Error getOrg: ${err}`);
+    console.trace();
+    return utils.sendError.InternalError(null, res);
+  }
+
 };
 
 function canPostOrg(user) {
