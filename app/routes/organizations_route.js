@@ -7,9 +7,7 @@
   */
  Encompass.OrganizationsRoute = Encompass.AuthenticatedRoute.extend({
   model: function () {
-    return Ember.RSVP.hash({
-      organizations: this.get('store').findAll('organization'),
-    });
+    return this.get('store').findAll('organization');
   },
 
   renderTemplate: function(){

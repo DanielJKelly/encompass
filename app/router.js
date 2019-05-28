@@ -93,6 +93,15 @@ Encompass.Router.map(function() {
     this.route("new");
     this.route('home');
   });
+
+  // ORGsS PARENT ROUTE
+  this.route("organizations", function(){
+    this.route("organization", {resetNamespace: true, path: '/:organizationId'}, function(){
+    });
+    this.route("new");
+    this.route('home');
+  });
+
   this.route('error', { path: '/*path'});
   this.route("logout");
   this.route("unconfirmed");
