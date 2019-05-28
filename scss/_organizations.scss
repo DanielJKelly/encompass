@@ -1,0 +1,316 @@
+@import 'variables';
+@import 'mixins';
+@import 'responsive-font-size';
+
+#org-container {
+  @include flex-container(
+    null,
+    null,
+    row,
+    wrap,
+    flex-start,
+    flex-start,
+    flex-start
+  );
+  height: calc(100% - 75px);
+  width: 100%;
+
+  .org-container-flex-item {
+    height: 100%;
+    &.side {
+      @include flex-item(1, flex-start, 1 1 auto);
+      width: 30%;
+      padding: 0 15px;
+      background: $filter-list-background-color;
+
+      @include flex-container(
+        null,
+        null,
+        row,
+        wrap,
+        flex-start,
+        flex-start,
+        flex-start
+      );
+
+      .side-flex-item {
+        width: 95%;
+        margin-bottom: 15px;
+        &.header {
+          line-height: 50px;
+          @include flex-item(1, flex-start, 1 1 auto);
+          @include flex-container(
+            null,
+            null,
+            row,
+            wrap,
+            space-between,
+            center,
+            center
+          );
+
+          h3 {
+            @include flex-item(1, center, 1 1 auto);
+            font-size: 1.3em;
+          }
+          .new-link-btn {
+            @include flex-item(2, center, 0 1 auto);
+            color: white;
+            background: $accent-color;
+            font-weight: $main-font-weight;
+            font-family: $primary-font;
+            border-radius: 3px;
+            padding: 0px 15px;
+            margin-left: 10px;
+            display: inline-block;
+            position: relative;
+            line-height: 40px;
+            &:hover {
+              font-weight: $bold-font-weight;
+              cursor: pointer;
+              background: darken($accent-color, 10%);
+              box-shadow: $button-shadow;
+            }
+          }
+        }
+        &.search {
+          @include flex-item(2, flex-start, 1 1 auto);
+          .search-bar-comp {
+            @include flex-container(
+              40px,
+              null,
+              row,
+              no-wrap,
+              flex-start,
+              flex-start,
+              stretch
+            );
+
+            margin: auto;
+          }
+        }
+        &.filter-sort {
+          @include flex-item(3, flex-start, 1 1 auto);
+          @include flex-container(
+            null,
+            null,
+            row,
+            wrap,
+            space-between,
+            flex-start,
+            flex-start
+          );
+        }
+
+        &.display-description {
+          @include flex-item(4, flex-start, 1 1 auto);
+        }
+        &.list {
+          @include flex-item(5, flex-start, 1 1 auto);
+          height: calc(100% - 198px);
+          overflow: auto;
+          .side-list-item {
+            background: white;
+            margin-bottom: 5px;
+            padding: 10px 10px 10px 5px;
+            border-bottom: 1px solid #d3d3d3;
+
+            .side-list-item-row {
+              @include flex-container(
+                null,
+                null,
+                row,
+                wrap,
+                space-between,
+                flex-start,
+                flex-start
+              );
+
+              .row-item {
+                &.name {
+                  @include flex-item(1, flex-start, 1 1 auto);
+                }
+                &.member-count {
+                  @include flex-item(2, flex-start, initial);
+                  width: 50px;
+                  span {
+                    text-align: center;
+                  }
+                  &::before {
+                    font-family: 'FontAwesome';
+                    content: '\f007';
+                    margin-right: 3px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    &.outlet {
+      @include flex-item(2, flex-start, 1 1 auto);
+      padding: 15px;
+      width: 60%;
+    }
+  }
+}
+
+#org-new {
+  margin-left: 25px;
+  @include flex-container(
+    null,
+    null,
+    row,
+    wrap,
+    flex-start,
+    flex-start,
+    flex-start
+  );
+
+  .org-new-flex-item {
+    width: 100%;
+    margin-bottom: 25px;
+    &.header {
+      @include flex-item(1, center, 1 1 auto);
+      font-size: 1.3em;
+      line-height: 50px;
+    }
+    &.form {
+      @include flex-item(2, flex-start, 1 1 auto);
+      @include flex-container(
+        null,
+        null,
+        row,
+        wrap,
+        flex-start,
+        flex-start,
+        flex-start
+      );
+
+      .flex-form-row {
+        @include flex-container(
+          null,
+          null,
+          row,
+          wrap,
+          flex-start,
+          center,
+          flex-start
+        );
+        width: 100%;
+        display: block;
+        margin-bottom: 25px;
+
+        label {
+          @include flex-item(1, center, 1 1 auto);
+          margin-bottom: 15px;
+          min-width: 100px;
+          max-width: 200px;
+        }
+
+        .input {
+          @include flex-item(2, center, 1 1 auto);
+          max-width: 400px;
+          margin-top: 15px;
+          input[type='text'] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 8px;
+          }
+        }
+        .error {
+          @include flex-item(3, center, 1 1 auto);
+          display: block;
+          max-width: 400px;
+        }
+
+        &.errors {
+          max-width: 400px;
+        }
+      }
+    }
+  }
+}
+
+#org-info {
+  @include flex-container(
+    null,
+    null,
+    row,
+    wrap,
+    flex-start,
+    flex-start,
+    flex-start
+  );
+  margin-left: 25px;
+
+  .org-info-section {
+    width: 100%;
+    margin-bottom: 15px;
+    &.name {
+      @include flex-item(1, center, 1 1 auto);
+      line-height: 50px;
+      font-size: 1.3em;
+      h3 {
+        display: inline-block;
+        margin-right: 25px;
+      }
+      input[type='text'] {
+        padding: 8px 8px;
+        width: 400px;
+      }
+    }
+    &.pdadmins {
+      @include flex-item(2, flex-start, 1 1 auto);
+      max-width: 75%;
+      ul {
+        @include flex-container(
+          null,
+          null,
+          column,
+          wrap,
+          flex-start,
+          flex-start,
+          flex-start
+        );
+        max-height: 400px;
+        overflow: auto;
+
+        li {
+          padding: 5px;
+          a {
+            color: $accent-color;
+          }
+        }
+      }
+    }
+    &.members {
+      @include flex-item(3, flex-start, 1 1 auto);
+      max-width: 75%;
+      ul {
+        @include flex-container(
+          null,
+          null,
+          column,
+          wrap,
+          flex-start,
+          flex-start,
+          flex-start
+        );
+        height: 400px;
+        overflow: auto;
+
+        .item {
+          padding: 5px;
+          a {
+            color: $accent-color;
+          }
+        }
+      }
+    }
+    &.buttons {
+      @include flex-item(4, flex-start, 1 1 auto);
+    }
+  }
+}
