@@ -2,5 +2,7 @@ Encompass.OrgListItemComponent = Ember.Component.extend(Encompass.CurrentUserMix
   classNames: ['org-list-item', 'side-list-item'],
   classNameBindings: ['isActive:is-active'],
 
-  isActive: Ember.computed.equal('activeOrg.id', this.getComputedStyle('org.id')),
+  isActive: function() {
+    return this.get('activeOrg.id') === this.get('org.id');
+  }.property('activeOrg', 'org'),
 });
