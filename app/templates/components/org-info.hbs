@@ -12,7 +12,7 @@
 <div class="org-info-section pdadmins">
   <h5>PD Admins</h5>
   <ul class="item-columns">
-    {{#each pdAdmins as |pdAdmin|}}
+    {{#each model.pdMembers as |pdAdmin|}}
     <li class="item">
       {{#link-to 'user' pdAdmin.username}}{{pdAdmin.username}}{{/link-to}}
     </li>
@@ -25,7 +25,7 @@
 <div class="org-info-section members">
   <h5>Members</h5>
   <ul class="item-columns">
-    {{#each model.members as |member|}}
+    {{#each model.regularMembers as |member|}}
     <li class="item">
       {{#link-to 'user' member.username}}{{member.username}}{{/link-to}}
       {{#if isEditing}}

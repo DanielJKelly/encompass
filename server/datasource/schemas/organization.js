@@ -2,14 +2,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
-const User = require('../schemas/user').User;
 
+const { states } = require('../constants');
 
+const statesEnum = Object.keys(states);
 /**
   * @public
   * @class Organization
-  * @description Organizations are used to categorize problems
-  * @todo Create or use external organizations for problem?
+  * @description Organizations are made up of encompass users
   */
 const OrganizationSchema = new Schema({
   //== Shared properties (Because Mongoose doesn't support schema inheritance)
@@ -19,9 +19,14 @@ const OrganizationSchema = new Schema({
   lastModifiedBy: { type: ObjectId, ref: 'User' },
   lastModifiedDate: { type: Date, 'default': Date.now() },
   //====
-  name: { type: String, required: true },
+  name: { type: String, required: true, trim: true },
   recommendedProblems: [{type: ObjectId, ref: 'Problem'}],
-  members: [{type: ObjectId, ref: 'User'}]
+  members: [{type: ObjectId, ref: 'User'}],
+  pdAdmins: [{type: ObjectId, ref: 'User'}],
+  location: {
+    city: {type: String, trim: true},
+    state: {type: String, enum: statesEnum}
+  }
 }, { versionKey: false });
 
 

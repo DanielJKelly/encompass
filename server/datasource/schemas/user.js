@@ -68,7 +68,7 @@ var UserSchema = new Schema({
   confirmEmailToken: { type: String },
   confirmEmailExpires: { type: Date },
   isEmailConfirmed: { type: Boolean, default: false },
-  organization: { type: ObjectId, ref: 'Organization' },
+  organization: { type: ObjectId, ref: 'Organization' }, // primary org
   organizationRequest: { type: String },
   location: { type: String },
   requestReason: { type: String },
@@ -89,8 +89,9 @@ var UserSchema = new Schema({
   socketId: { type: String },
   seenTour: { type: Date },
   lastSeen: { type: Date },
-  history: [Log] // currently not working
+  history: [Log], // currently not working
   //sessions: [{key: String, starts: Number, ends: Number}]
+  organizations: [{type: ObjectId, Ref: 'Organization'}],
 },
 {
   versionKey: false,

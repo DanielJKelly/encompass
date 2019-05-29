@@ -84,4 +84,5 @@ Encompass.User = DS.Model.extend(Encompass.Auditable, {
   collabWorkspaces: DS.attr(),
   hiddenWorkspaces: DS.attr(),
   socketId: DS.attr('string'),
+  organizations: DS.hasMany('organization'),
 });

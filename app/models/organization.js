@@ -3,4 +3,18 @@ Encompass.Organization = DS.Model.extend(Encompass.Auditable, {
   name: DS.attr('string'),
   recommendedProblems: DS.hasMany('problem', { async: true, inverse: null }),
   members: DS.hasMany('user'),
+  location: DS.attr(),
+  pdAdmins: DS.attr({defaultValue: []}), // array of objectIds
+
+  regularMembers: function() {
+    return this.get('members').reject((user) => {
+      return this.get('pdAdmins').includes(user.get('id'));
+    });
+  }.property('members.[]', 'pdAdmins.[]'),
+
+  pdMembers: function() {
+    return this.get('members').filter((user) => {
+      return this.get('pdAdmins').includes(user.get('id'));
+    });
+  }.property('members.[]', 'pdAdmins.[]'),
 });
