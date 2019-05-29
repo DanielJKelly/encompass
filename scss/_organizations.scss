@@ -109,11 +109,20 @@
           @include flex-item(5, flex-start, 1 1 auto);
           height: calc(100% - 198px);
           overflow: auto;
+
+          a.active {
+            background: none;
+          }
           .side-list-item {
             background: white;
             margin-bottom: 5px;
             padding: 10px 10px 10px 5px;
             border-bottom: 1px solid #d3d3d3;
+
+            &.is-active {
+              background: $accent-color;
+              font-weight: $bolder-font-weight;
+            }
 
             .side-list-item-row {
               @include flex-container(
@@ -248,6 +257,26 @@
   .org-info-section {
     width: 100%;
     margin-bottom: 15px;
+    ul.item-columns {
+      @include flex-container(
+        null,
+        null,
+        column,
+        wrap,
+        flex-start,
+        flex-start,
+        flex-start
+      );
+      max-height: 400px;
+      overflow: auto;
+
+      .item {
+        padding: 5px;
+        a {
+          color: $accent-color;
+        }
+      }
+    }
     &.name {
       @include flex-item(1, center, 1 1 auto);
       line-height: 50px;
@@ -264,53 +293,18 @@
     &.pdadmins {
       @include flex-item(2, flex-start, 1 1 auto);
       max-width: 75%;
-      ul {
-        @include flex-container(
-          null,
-          null,
-          column,
-          wrap,
-          flex-start,
-          flex-start,
-          flex-start
-        );
-        max-height: 400px;
-        overflow: auto;
 
-        li {
-          padding: 5px;
-          a {
-            color: $accent-color;
-          }
-        }
-      }
     }
     &.members {
       @include flex-item(3, flex-start, 1 1 auto);
       max-width: 75%;
-      ul {
-        @include flex-container(
-          null,
-          null,
-          column,
-          wrap,
-          flex-start,
-          flex-start,
-          flex-start
-        );
-        height: 400px;
-        overflow: auto;
-
-        .item {
-          padding: 5px;
-          a {
-            color: $accent-color;
-          }
-        }
-      }
+    }
+    &.problems {
+      @include flex-item(4, flex-start, 1 1 auto);
+      max-width: 75%;
     }
     &.buttons {
-      @include flex-item(4, flex-start, 1 1 auto);
+      @include flex-item(10, flex-start, 1 1 auto);
     }
   }
 }
