@@ -118,49 +118,80 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
         return this.get('membersToAdd').addObject(user);
       },
 
-      // removeMember(member) {
-      //   if (!member) {
-      //     return;
-      //   }
+      removeMember(member) {
+        if (!member) {
+          return;
+        }
+        let org = this.get('model');
 
-      //   let username = member.get('username');
-      //   let orgName = this.get('model.name');
+        if (!org) {
+          return;
+        }
 
-      //   let warningText = `Are you sure you want to remove ${username} from ${orgName}?`;
-      //   let confirmText = 'Yes, remove.';
+        let username = member.get('username');
+        let orgName = org.get('name');
 
-      //   let successText = 'Member removed';
+        let warningText = `Are you sure you want to remove ${username} from ${orgName}?`;
 
-      //   let undoBtnText = 'Undo';
-      //   let undoSuccessText = 'Member re-added';
+        let confirmText = 'Yes, remove.';
 
-      //   return this.get('alert').showModal('warning', warningText, null, confirmText)
-      //     .then((result) => {
-      //       if (result.value) {
-      //         // remove user from org members
-      //         this.get('model').removeObject(member);
+        let successText = 'Member removed';
 
-      //         // update user's org
+        let undoBtnText = 'Undo';
+        let undoSuccessText = 'Member re-added';
 
-      //         member.set('organization', null);
-      //         return Ember.RSVP.hash({
-      //           org: this.get('model').save(),
-      //           member: member.save(),
-      //         })
-      //         .then(())
-      //         return this.get('alert').showToast('success', successText, 'bottem-end', 3000, true, undoBtnText)
-      //           .then((result) => {
-      //             if (result.value) {
-      //               return this.get('alert').showToast('success', undoSuccessText, 'bottem-end', 3000, false, null);
-      //             }
-      //           });
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       this.handleErrors(err, 'modelUpdateErrors', this.get('model'));
-      //     });
+        let willMemberBeOrgless = member.get('organizations.length') === 1;
 
-      // }
+        if (willMemberBeOrgless) {
+          warningText += `${username} will not belong to any organizations after removal.`;
+        }
+
+        let memberPrimaryOrgId = this.get('utils').getBelongsToId(member, 'organization');
+
+        let wasPrimaryOrg = memberPrimaryOrgId === org.get('id');
+
+        return this.get('alert').showModal('warning', warningText, null, confirmText)
+          .then((result) => {
+            if (result.value) {
+              // remove user from org members
+              org.get('members').removeObject(member);
+              member.get('organizations').removeObject(org);
+
+              if (wasPrimaryOrg) {
+                member.set('organization', null);
+              }
+              return Ember.RSVP.hash({
+                org: org.save(),
+                member: member.save(),
+              })
+              .then((updatedRecords) => {
+                return this.get('alert').showToast('success', successText, 'bottom-end', 3000, true, undoBtnText)
+                .then((result) => {
+                  if (result.value) {
+                    // user clicked undo, re-add member to org
+                    org.get('members').addObject(member);
+                    member.get('organizations').addObject(org);
+
+                    if (wasPrimaryOrg) {
+                      member.set('organization', org);
+                    }
+                    return Ember.RSVP.hash({
+                      org: org.save(),
+                      member: member.save()
+                    })
+                    .then((updatedRecords) => {
+                      return this.get('alert').showToast('success', undoSuccessText, 'bottom-end', 3000, false, null);
+                    });
+                  }
+                });
+              });
+            }
+          })
+          .catch((err) => {
+            this.handleErrors(err, 'modelUpdateErrors', this.get('model'));
+          });
+
+      }
     }
   }
 );
