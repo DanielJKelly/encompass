@@ -21,26 +21,25 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
     areMembersToAdd: Ember.computed.gt('membersToAdd.length', 0),
     arePdAdminsToAdd: Ember.computed.gt('pdAdminsToAdd.length', 0),
 
-    pdAdmins: function() {
-      return this.get('model.members').filterBy('accountType', 'P');
-    }.property('model.members.@each.accountType'),
+    regularMembers: function() {
+      return this.get('model.members').reject((user) => {
+        return this.get('model.pdAdmins').includes(user.get('id'));
+      });
+    }.property('model.members.[]', 'model.pdAdmins.[]'),
+
+    pdMembers: function() {
+      return this.get('model.members').filter((user) => {
+        return this.get('model.pdAdmins').includes(user.get('id'));
+      });
+    }.property('model.members.[]', 'model.pdAdmins.[]'),
 
     canEdit: function() {
       if (this.get('currentUser.accountType') === 'A') {
         return true;
       }
+      // if non admin can edit org info if pdadmin for org
+      return this.get('existingPdAdminIdHash.' + this.get('currentUser.id'));
 
-      // if non admin can edit org info if pdadmin
-      if (this.get('currentUser.accountType') !== 'P') {
-        return false;
-      }
-
-      let userOrgId = this.get('utils').getBelongsToId(
-        this.get('currentUser'),
-        'organization'
-      );
-
-      return userOrgId === this.get('model.id');
     }.property('currentUser.accountType', 'currentUser.organization', 'model'),
 
     existingMemberIdHash: function() {
@@ -214,40 +213,21 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
           warningText += `${username} will not belong to any organizations after removal.`;
         }
 
-        let memberPrimaryOrgId = this.get('utils').getBelongsToId(member, 'organization');
-
-        let wasPrimaryOrg = memberPrimaryOrgId === org.get('id');
 
         return this.get('alert').showModal('warning', warningText, null, confirmText)
           .then((result) => {
             if (result.value) {
               // remove user from org members
               org.get('members').removeObject(member);
-              member.get('organizations').removeObject(org);
-
-              if (wasPrimaryOrg) {
-                member.set('organization', null);
-              }
-              return Ember.RSVP.hash({
-                org: org.save(),
-                member: member.save(),
-              })
-              .then((updatedRecords) => {
+              return org.save()
+              .then((updatedOrg) => {
                 return this.get('alert').showToast('success', successText, 'bottom-end', 5000, true, undoBtnText)
                 .then((result) => {
                   if (result.value) {
                     // user clicked undo, re-add member to org
                     org.get('members').addObject(member);
-                    member.get('organizations').addObject(org);
-
-                    if (wasPrimaryOrg) {
-                      member.set('organization', org);
-                    }
-                    return Ember.RSVP.hash({
-                      org: org.save(),
-                      member: member.save()
-                    })
-                    .then((updatedRecords) => {
+                    return org.save()
+                    .then((updatedOrg) => {
                       return this.get('alert').showToast('success', undoSuccessText, 'bottom-end', 3000, false, null);
                     });
                   }
@@ -271,27 +251,13 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
 
         org.get('members').addObjects(membersToAdd);
 
-        let updatedMembers = Ember.RSVP.all(membersToAdd.map((user) => {
-          let userPrimaryOrgId = this.getPrimaryOrgId(user);
-          if (userPrimaryOrgId === null) {
-            user.organization = org;
-          }
-          user.get('organizations').addObject(org);
-
-          return user.save();
-        }));
-
-        return Ember.RSVP.hash({
-          updatedOrg: org.save(),
-          updatedUsers: updatedMembers
-        })
-        .then((updatedRecords) => {
+        return org.save()
+        .then((updatedOrg) => {
           this.clearSelectizeInput('select-add-member');
           this.set('membersToAdd', []);
           return this.get('alert').showToast('success', 'Members Added', 'bottom-end', 3000, false, null);
         })
         .catch((err) => {
-          console.log('err', err);
           this.handleErrors(err, 'modelUpdateErrors', org);
         });
       },
@@ -342,27 +308,7 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
         org.get('pdAdmins').addObjects(pdAdminsToAdd.mapBy('id'));
         org.get('members').addObjects(pdAdminsToAdd);
 
-        let updatedMembers = Ember.RSVP.all(pdAdminsToAdd.map((user) => {
-          let doSetPrimary = user.get('organizations.length') === 0;
-
-          if (doSetPrimary) {
-            user.organization = org;
-          }
-
-          let doAddToOrgs = !this.get('existingMemberIdHash.' + user.get('id'));
-
-          if (doAddToOrgs) {
-            // only need to add to user's orgs if not existing member
-            user.get('organizations').addObject(org);
-          }
-
-          return user.save();
-        }));
-
-        return Ember.RSVP.hash({
-          updatedOrg: org.save(),
-          updatedUsers: updatedMembers
-        })
+        return org.save()
         .then((updatedRecords) => {
           this.clearSelectizeInput('select-add-pdadmin');
           this.set('pdAdminsToAdd', []);
@@ -400,9 +346,6 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
           warningText += `${username} will not belong to any organizations after removal.`;
         }
 
-        let memberPrimaryOrgId = this.get('utils').getBelongsToId(pdAdmin, 'organization');
-
-        let wasPrimaryOrg = memberPrimaryOrgId === org.get('id');
 
         return this.get('alert').showModal('warning', warningText, null, confirmText)
           .then((result) => {
@@ -411,16 +354,8 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
               org.get('pdAdmins').removeObject(pdAdmin.get('id'));
               org.get('members').removeObject(pdAdmin);
 
-              pdAdmin.get('organizations').removeObject(org);
-
-              if (wasPrimaryOrg) {
-                pdAdmin.set('organization', null);
-              }
-              return Ember.RSVP.hash({
-                org: org.save(),
-                pdAdmin: pdAdmin.save(),
-              })
-              .then((updatedRecords) => {
+              return org.save()
+              .then((updatedOrg) => {
                 return this.get('alert').showToast('success', successText, 'bottom-end', 5000, true, undoBtnText)
                 .then((result) => {
                   if (result.value) {
@@ -428,16 +363,8 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
                     org.get('pdAdmins').addObject(pdAdmin.get('id'));
                     org.get('members').addObject(pdAdmin);
 
-                    pdAdmin.get('organizations').addObject(org);
-
-                    if (wasPrimaryOrg) {
-                      pdAdmin.set('organization', org);
-                    }
-                    return Ember.RSVP.hash({
-                      org: org.save(),
-                      pdAdmin: pdAdmin.save()
-                    })
-                    .then((updatedRecords) => {
+                    return org.save()
+                    .then((updatedOrg) => {
                       return this.get('alert').showToast('success', undoSuccessText, 'bottom-end', 3000, false, null);
                     });
                   }

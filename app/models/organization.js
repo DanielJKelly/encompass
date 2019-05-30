@@ -4,17 +4,11 @@ Encompass.Organization = DS.Model.extend(Encompass.Auditable, {
   recommendedProblems: DS.hasMany('problem', { async: true, inverse: null }),
   members: DS.hasMany('user', {inverse: null}),
   location: DS.attr(),
-  pdAdmins: DS.attr({defaultValue: []}), // array of objectIds
+  pdAdmins: DS.attr({defaultValue: []}), // array of objectIds,
 
-  regularMembers: function() {
-    return this.get('members').reject((user) => {
-      return this.get('pdAdmins').includes(user.get('id'));
-    });
-  }.property('members.[]', 'pdAdmins.[]'),
+  memberCount: function() {
+    return this.hasMany('members').ids().get('length');
+  }.property('members.[]'),
 
-  pdMembers: function() {
-    return this.get('members').filter((user) => {
-      return this.get('pdAdmins').includes(user.get('id'));
-    });
-  }.property('members.[]', 'pdAdmins.[]'),
+
 });
