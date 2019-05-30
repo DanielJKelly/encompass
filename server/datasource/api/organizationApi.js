@@ -8,6 +8,8 @@ const userAuth = require('../../middleware/userAuth');
 const utils = require('../../middleware/requestHandler');
 const apiUtils = require('./utils');
 
+const { isNonEmptyObject } = require('../../utils/objects');
+
 module.exports.get = {};
 module.exports.post = {};
 module.exports.put = {};
@@ -22,23 +24,81 @@ module.exports.put = {};
   * @throws {RestError} Something? went wrong
 */
 
+const excludedFields = {isNewlyTrashed: 0, isNewlyRestored: 0};
+
+function processFilterBy(user, defaultFilter, requestFilter) {
+  // allowed
+  if (!isNonEmptyObject(requestFilter)) {
+    return defaultFilter;
+  }
+
+  let results = {...defaultFilter};
+
+  let { includeTrashed } = requestFilter;
+
+  if (user.accountType === 'A') {
+    // only admins can see trashed orgs
+    if (parseInt(includeTrashed, 10) === 1) {
+      delete results.isTrashed;
+    }
+  }
+
+  return results;
+}
+
+function processSortBy(user, defaultParams, requestParams) {
+  if (!isNonEmptyObject(requestParams)) {
+    return defaultParams;
+  }
+
+  let results = {...defaultParams};
+
+  return results;
+}
+
+function processQuery(user, query) {
+  let defaultCriteria = { isTrashed: false };
+  let defaultSortParam = { members: -1 };
+
+  let results = [defaultCriteria, defaultSortParam];
+
+  if (!isNonEmptyObject(query)) {
+    return results;
+  }
+
+  let { filterBy, sortBy } = query;
+
+  results[0] = processFilterBy(user, defaultCriteria, filterBy);
+  results[1] = processSortBy(user, defaultSortParam, sortBy);
+
+  return results;
+}
+
 const getOrganizations = async function(req, res, next) {
   //const criteria = utils.buildCriteria(req);
   //const user = userAuth.requireUser(req);
   try {
-    const sortBy = req.query.sortBy;
+    let user = req.user;
 
-    let organizations = await models.Organization.find({isTrashed: false}).lean().exec();
+    let [ criteria, sortParam] = processQuery(user, req.query);
 
-    if (sortBy === 'members') {
-      // return orgs sorted by member count descending
-      organizations = organizations.sort((a, b) => {
-        return b.members.length - a.members.length;
-      });
+    let [results, itemCount] = await Promise.all([
+      apiUtils.sortWorkspaces('Organization', sortParam, req, criteria, excludedFields),
+      models.Organization.count(criteria)
+    ]);
 
-    }
+    const pageCount = Math.ceil(itemCount / req.query.limit);
 
-    const data = { organizations };
+    let currentPage = req.query.page ? req.query.page : 1;
+
+    const data = {
+      organizations: results,
+      meta: {
+        total: itemCount,
+        pageCount,
+        currentPage
+      }
+    };
     return utils.sendResponse(res, data);
   }catch(err) {
       console.error(`Error getOrgMembers: ${err}`);
@@ -62,10 +122,11 @@ const getOrganizations = async function(req, res, next) {
 const getOrganization = async (req, res, next) => {
 
   try {
+    let user = req.user;
+    let isAdmin = user.accountType === 'A';
+    let organization = await models.Organization.findById(req.params.id, excludedFields).lean().exec();
 
-    let organization = await models.Organization.findById(req.params.id).lean().exec();
-
-    if (!organization || organization.isTrashed) {
+    if (!organization || (organization.isTrashed && !isAdmin)) {
       return utils.sendResponse(res, null);
     }
 
@@ -134,6 +195,9 @@ const postOrganization = (req, res, next) => {
       return organization.save();
     })
     .then((org) => {
+      Object.keys(excludedFields).forEach((field) => {
+        delete org[field];
+      });
       return utils.sendResponse(res, {organization: org });
     })
     .catch((err) => {
@@ -183,6 +247,9 @@ const putOrganization = (req, res, next) => {
     return doc.save();
   })
   .then((updatedOrg) => {
+    Object.keys(excludedFields).forEach((field) => {
+      delete updatedOrg[field];
+    });
     return utils.sendResponse(res, {organization: updatedOrg});
   })
   .catch((err) => {
@@ -193,28 +260,6 @@ const putOrganization = (req, res, next) => {
     return utils.sendError.InternalError(null, res);
   });
 
-  // what check do we want to perform if the user can edit
-  // if they created the organization?
-  // models.Organization.findById(req.params.id, (err, doc) => {
-  //   if(err) {
-  //     logger.error(err);
-  //     return utils.sendError.InternalError(err, res);
-  //   }
-  //   // make the updates
-  //   for(let field in req.body.organization) {
-  //     if((field !== '_id') && (field !== undefined)) {
-  //       doc[field] = req.body.organization[field];
-  //     }
-  //   }
-  //   doc.save((err, organization) => {
-  //     if (err) {
-  //       logger.error(err);
-  //       return utils.sendError.InternalError(err, res);
-  //     }
-  //     const data = {'organization': organization};
-  //     utils.sendResponse(res, data);
-  //   });
-  // });
 };
 
 module.exports.get.organizations = getOrganizations;
