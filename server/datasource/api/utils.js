@@ -8,7 +8,7 @@ const mongooseUtils = require('../../utils/mongoose');
 const objectUtils = require('../../utils/objects');
 const stringUtils = require('../../utils/strings');
 
-const { isNonEmptyArray, isNonEmptyString } = objectUtils;
+const { isNonEmptyArray, isNonEmptyString, isNonEmptyObject } = objectUtils;
 
 const { isValidMongoId, cleanObjectIdArray } = mongooseUtils;
 
@@ -135,7 +135,7 @@ function getSafeName(str, doRemoveExtraSpaces, doCapitalize) {
   return firstName;
 }
 
-const sortWorkspaces = function(model, sortParam, req, criteria) {
+const sortWorkspaces = function(model, sortParam, req, criteria, excludedFields) {
   // Limit and skip are passed in with the req
   let limit = req.query.limit;
   let skip = req.skip;
@@ -151,87 +151,90 @@ const sortWorkspaces = function(model, sortParam, req, criteria) {
   let skipObj = { "$skip": skip };
 
   // Match Obj takes the passed in criteria, as well as checking sortable field exists
-  criteria.$and.forEach((criterion) => {
-    if (criterion.hasOwnProperty('createdBy')) {
-      let value = criterion.createdBy;
-      if (value.hasOwnProperty('$in')) {
-        const pruned = cleanObjectIdArray(value.$in, true);
-        if (isNonEmptyArray(pruned)) {
-          value.$in = pruned;
-        } else {
-          delete value.$in;
-        }
-      } else {
-        if (isValidMongoId(value)) {
-          let updatedValue = mongoose.Types.ObjectId(value);
-          criterion.createdBy = updatedValue;
-        } else {
-          // bad objectId, delete filter property
-          delete criterion.createdBy;
-        }
-      }
-    }
-    if (criterion.hasOwnProperty('_id')) {
-      let value = criterion._id;
-      if (value.hasOwnProperty('$in')) {
-        const pruned = cleanObjectIdArray(value.$in, true);
-        if (isNonEmptyArray(pruned)) {
-          value.$in = pruned;
-        } else {
-          delete value.$in;
-        }
-      } else {
-        if (isValidMongoId(value)) {
-          criterion._id = mongoose.Types.ObjectId(value);
-        } else {
-          // bad objectId, delete filter property
-          delete criterion._id;
-        }
-      }
-    }
-    if (criterion.hasOwnProperty('$or')) {
-      criterion.$or.forEach((crit) => {
-        if (crit.hasOwnProperty('createdBy')) {
-          let value = crit.createdBy;
-          if (value.hasOwnProperty('$in')) {
-            const pruned = cleanObjectIdArray(value.$in, true);
-            if (isNonEmptyArray(pruned)) {
-              value.$in = pruned;
-            } else {
-              delete value.$in;
-            }
+  if (Array.isArray(criteria.$and)) {
+    criteria.$and.forEach((criterion) => {
+      if (criterion.hasOwnProperty('createdBy')) {
+        let value = criterion.createdBy;
+        if (value.hasOwnProperty('$in')) {
+          const pruned = cleanObjectIdArray(value.$in, true);
+          if (isNonEmptyArray(pruned)) {
+            value.$in = pruned;
           } else {
-            if (isValidMongoId(value)) {
-              let updatedValue = mongoose.Types.ObjectId(value);
-              crit.createdBy = updatedValue;
-            } else {
-              // bad objectId, delete filter property
-              delete crit.createdBy;
-            }
+            delete value.$in;
+          }
+        } else {
+          if (isValidMongoId(value)) {
+            let updatedValue = mongoose.Types.ObjectId(value);
+            criterion.createdBy = updatedValue;
+          } else {
+            // bad objectId, delete filter property
+            delete criterion.createdBy;
           }
         }
-        if (crit.hasOwnProperty('owner')) {
-          let value = crit.owner;
-          if (value.hasOwnProperty('$in')) {
-            const pruned = cleanObjectIdArray(value.$in, true);
-            if (isNonEmptyArray(pruned)) {
-              value.$in = pruned;
-            } else {
-              delete value.$in;
-            }
+      }
+      if (criterion.hasOwnProperty('_id')) {
+        let value = criterion._id;
+        if (value.hasOwnProperty('$in')) {
+          const pruned = cleanObjectIdArray(value.$in, true);
+          if (isNonEmptyArray(pruned)) {
+            value.$in = pruned;
           } else {
-            if (isValidMongoId(value)) {
-              let updatedValue = mongoose.Types.ObjectId(value);
-              crit.owner = updatedValue;
-            } else {
-              // bad objectId, delete filter property
-              delete crit.owner;
-            }
+            delete value.$in;
+          }
+        } else {
+          if (isValidMongoId(value)) {
+            criterion._id = mongoose.Types.ObjectId(value);
+          } else {
+            // bad objectId, delete filter property
+            delete criterion._id;
           }
         }
-      });
-    }
-  });
+      }
+      if (criterion.hasOwnProperty('$or')) {
+        criterion.$or.forEach((crit) => {
+          if (crit.hasOwnProperty('createdBy')) {
+            let value = crit.createdBy;
+            if (value.hasOwnProperty('$in')) {
+              const pruned = cleanObjectIdArray(value.$in, true);
+              if (isNonEmptyArray(pruned)) {
+                value.$in = pruned;
+              } else {
+                delete value.$in;
+              }
+            } else {
+              if (isValidMongoId(value)) {
+                let updatedValue = mongoose.Types.ObjectId(value);
+                crit.createdBy = updatedValue;
+              } else {
+                // bad objectId, delete filter property
+                delete crit.createdBy;
+              }
+            }
+          }
+          if (crit.hasOwnProperty('owner')) {
+            let value = crit.owner;
+            if (value.hasOwnProperty('$in')) {
+              const pruned = cleanObjectIdArray(value.$in, true);
+              if (isNonEmptyArray(pruned)) {
+                value.$in = pruned;
+              } else {
+                delete value.$in;
+              }
+            } else {
+              if (isValidMongoId(value)) {
+                let updatedValue = mongoose.Types.ObjectId(value);
+                crit.owner = updatedValue;
+              } else {
+                // bad objectId, delete filter property
+                delete crit.owner;
+              }
+            }
+          }
+        });
+      }
+    });
+  }
+
   let matchObj = { "$match" : criteria };
   let matchNest = matchObj.$match;
   matchNest[sortField] = { $exists: true, $ne: null };
@@ -242,9 +245,15 @@ const sortWorkspaces = function(model, sortParam, req, criteria) {
   let schema = require('mongoose').model(model).schema;
   let schemaObj = schema.obj;
   let ObjKeys = Object.keys(schemaObj);
+
+  let keysToExclude = isNonEmptyObject(excludedFields) ? Object.keys(excludedFields) : [];
+
   ObjKeys.forEach((key) => {
-    projNest[key] = 1;
+    if (!keysToExclude.includes(key)) {
+      projNest[key] = 1;
+    }
   });
+
   projNest.length = { "$size": '$' + sortField };
 
   // All objects are pushed into the aggregate array
