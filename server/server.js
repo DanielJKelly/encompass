@@ -205,7 +205,7 @@ server.get('/api/sections', api.get.sections);
 server.get('/api/sections/:id', path.validateId(), api.get.section);
 server.get('/api/categories', api.get.categories);
 server.get('/api/categories/:id', path.validateId(), api.get.category);
-server.get('/api/organizations', api.get.organizations);
+server.get('/api/organizations', paginate.middleware(25, 100), api.get.organizations);
 server.get('/api/organizations/:id', path.validateId(), api.get.organization);
 server.get('/api/assignments', api.get.assignments);
 server.get('/api/assignments/:id', path.validateId(), api.get.assignment);
