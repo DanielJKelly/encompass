@@ -76,6 +76,40 @@ function cleanObjectIdArray(arr, doConvert=false) {
   return _.map(filtered, val => mongoose.Types.ObjectId(val));
 }
 
+function isObjectIdInArrayOfObjectIds(objectId, objectIds) {
+  if (!Array.isArray(objectIds)) {
+    return false;
+  }
+
+  let foundId = _.find(objectIds, (id) => {
+    return areObjectIdsEqual(id, objectId);
+  });
+
+  return foundId !== undefined;
+
+}
+
+function compareArraysOfObjectIds(originalIds, newIds) {
+  let missingIds = []; // ids in original but new
+  let addedIds = [];
+
+  if (!Array.isArray(originalIds) || !Array.isArray(newIds)) {
+    return [missingIds, addedIds];
+  }
+
+  missingIds = originalIds.filter((id) => {
+    return !isObjectIdInArrayOfObjectIds(id, newIds);
+  });
+
+  addedIds = newIds.filter((id) => {
+    return !isObjectIdInArrayOfObjectIds(id, originalIds);
+  });
+
+  return [missingIds, addedIds];
+}
+
   module.exports.isValidMongoId = isValidMongoId;
   module.exports.areObjectIdsEqual = areObjectIdsEqual;
   module.exports.cleanObjectIdArray = cleanObjectIdArray;
+  module.exports.isObjectIdInArrayOfObjectIds = isObjectIdInArrayOfObjectIds;
+  module.exports.compareArraysOfObjectIds = compareArraysOfObjectIds;
