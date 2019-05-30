@@ -124,6 +124,13 @@
               font-weight: $bolder-font-weight;
             }
 
+            &.strikethrough {
+              a {
+                color: $error-color;
+                text-decoration: line-through;
+              }
+            }
+
             .side-list-item-row {
               @include flex-container(
                 null,
@@ -257,6 +264,12 @@
   .org-info-section {
     width: 100%;
     margin-bottom: 15px;
+    a {
+      color: $accent-color;
+    }
+    .no-items {
+      padding: 5px;
+    }
     ul.item-columns {
       @include flex-container(
         null,
@@ -269,12 +282,10 @@
       );
       max-height: 400px;
       overflow: auto;
+      margin-bottom: 15px;
 
       .item {
         padding: 5px;
-        a {
-          color: $accent-color;
-        }
       }
     }
     &.name {
