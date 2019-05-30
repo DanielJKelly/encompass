@@ -3,7 +3,6 @@
   * # Problem API
   * @description This is the API for problem based requests
 */
-/* jshint ignore:start */
 //REQUIRE MODULES
 const logger = require('log4js').getLogger('server');
 const _ = require('underscore');
@@ -596,4 +595,3 @@ module.exports.post.problem = postProblem;
 module.exports.put.problem = putProblem;
 module.exports.put.problem.addCategory = addCategory;
 module.exports.put.problem.removeCategory = removeCategory;
-/* jshint ignore:end */

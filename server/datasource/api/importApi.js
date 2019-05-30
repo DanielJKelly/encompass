@@ -145,7 +145,6 @@ const buildSubmissionSet = async function (submissions, user) {
   return null;
 };
 
-/* jshint ignore:start */
 const postImport = async function(req, res, next) {
   let submissionSet;
   const user = userAuth.requireUser(req);

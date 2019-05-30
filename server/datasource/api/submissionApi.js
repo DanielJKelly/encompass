@@ -1,4 +1,3 @@
-/* jshint ignore:start */
 /**
   * # Submissions API
   * @description This is the API for submission based requests
@@ -435,4 +434,3 @@ module.exports.get.submission = getSubmission;
 module.exports.post.submission = postSubmission;
 module.exports.put.submission = putSubmission;
 module.exports.post.importSubmissionsRequest = importSubmissions;
-/* jshint ignore:end */

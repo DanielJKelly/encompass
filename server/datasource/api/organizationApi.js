@@ -266,4 +266,3 @@ module.exports.get.organizations = getOrganizations;
 module.exports.get.organization = getOrganization;
 module.exports.post.organization = postOrganization;
 module.exports.put.organization = putOrganization;
-/* jshint ignore:end */

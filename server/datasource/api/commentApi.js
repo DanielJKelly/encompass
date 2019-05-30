@@ -4,7 +4,6 @@
   * @author Damola Mabogunje <damola@mathforum.org>
   * @since 1.0.0
   */
-/* jshint ignore:start */
 //REQUIRE MODULES
 const _ = require('underscore');
 const logger = require('log4js').getLogger('server');
@@ -318,4 +317,3 @@ module.exports.get.comments = getComments;
 module.exports.get.comment = getComment;
 module.exports.post.comment = postComment;
 module.exports.put.comment = putComment;
-/* jshint ignore:end */

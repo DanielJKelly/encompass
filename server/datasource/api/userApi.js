@@ -1,4 +1,3 @@
-/* jshint ignore:start */
 /**
   * @description This is the API for user based requests
   * @author Damola Mabogunje <damola@mathforum.org>
@@ -400,4 +399,3 @@ function postUser(req, res, next) {
   module.exports.put.user.removeSection = removeSection;
   module.exports.put.user.addAssignment = addAssignment;
   module.exports.put.user.removeAssignment = removeAssignment;
-/* jshint ignore:end */
