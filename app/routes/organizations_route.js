@@ -7,11 +7,33 @@
   */
  Encompass.OrganizationsRoute = Encompass.AuthenticatedRoute.extend({
   model: function () {
-    return this.get('store').findAll('organization');
+    // return this.get('store').findAll('organization');
+    return this.get('store').query('organization', {
+      filterBy: {
+        includeTrashed: 1,
+      },
+      sortBy: {
+        members: -1,
+      }
+    })
+    .then((results) => {
+      return {
+        orgs: results.toArray(),
+        meta: results.get('meta')
+      };
+    });
   },
 
   renderTemplate: function(){
     this.render('organizations/organizations');
+  },
+  actions: {
+    toHome() {
+      this.transitionTo('organizations.home');
+    },
+    toOrg(orgId) {
+     this.transitionTo('organization', orgId);
+    }
   }
 
 });
