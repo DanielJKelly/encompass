@@ -1,11 +1,16 @@
 
-<div class ="org-info-section name">
+<div class="org-info-section name">
   {{#if isEditing}}
     {{input type="text" value=updatedOrgName}}
+    <i {{action "trashOrg"}}class="fas fa-trash"></i>
   {{else}}
-    <h3>{{model.name}}</h3>
+    <h3 class="{{if model.isTrashed "strikethrough"}}">{{model.name}}</h3>
       {{#if canEdit}}
-        <i {{action "beginEditing"}} class="fas fa-edit"></i>
+        {{#if model.isTrashed}}
+          <button class="primary-button restore-button" {{action "restoreOrg" model}}>Restore</button>
+        {{else}}
+          <i {{action "beginEditing"}} class="fas fa-edit"></i>
+        {{/if}}
       {{/if}}
   {{/if}}
 </div>
@@ -15,12 +20,36 @@
     {{#each model.pdMembers as |pdAdmin|}}
     <li class="item">
       {{#link-to 'user' pdAdmin.username}}{{pdAdmin.username}}{{/link-to}}
+      {{#if isEditing}}
+        <i {{action "removePdAdmin" pdAdmin}} class="fas fa-minus-circle"></i>
+      {{/if}}
     </li>
     {{else}}
-      This organization has not yet been assigned a PD Admin.
-      Assign now.
+      <p class="no-items">
+        This organization has not yet been assigned a PD Admin.</p>
     {{/each}}
   </ul>
+  {{#if isEditing}}
+    <p>Add Pd Admins</p>
+    {{selectize-input
+      store=store
+      inputId="select-add-pdadmin"
+      maxItems=20
+      initialOptions=initialPdAdminOptions
+      selectedItemsHash=existingPdAdminIdHash
+      onItemAdd=(action "updatePdAdminsToAdd")
+      onItemRemove=(action "updatePdAdminsToAdd")
+      model="user"
+      isAsync=true
+      labelField="username"
+      searchField="username"
+      valueField="id"
+      queryParamsKey="usernameSearch"
+    }}
+    {{#if arePdAdminsToAdd}}
+      <button {{action "addPdAdmins"}} class="primary-button" {{action "addPdAdmins"}}>{{addPdAdminsBtnText}}</button>
+    {{/if}}
+  {{/if}}
 </div>
 <div class="org-info-section members">
   <h5>Members</h5>
@@ -33,7 +62,7 @@
       {{/if}}
     </li>
     {{else}}
-      This organization does not have any members yet. Add some now.
+      <p class="no-items">This organization does not have any members yet.</p>
     {{/each}}
   </ul>
   {{#if isEditing}}
@@ -54,24 +83,26 @@
       queryParamsKey="usernameSearch"
     }}
     {{#if areMembersToAdd}}
-      <button>Add {{membersToAdd.length}} Members</button>
+      <button class="primary-button" {{action "addMembers"}}>{{addMembersBtnText}}</button>
     {{/if}}
   {{/if}}
 </div>
 <div class="org-info-section problems">
   <h5>Recommended Problems</h5>
-  <ul class="item-columns">
-    {{#each model.recommendedProblems as |problem|}}
-    <li class="item">
-      {{#link-to 'problem' problem.id}}{{problem.title}}{{/link-to}}
-      {{#if isEditing}}
-        <i {{action 'removeProblem' problem}} class="fas fa-minus-circle"></i>
-      {{/if}}
-    </li>
-    {{else}}
-      This organization does not have any members yet. Add some now.
-    {{/each}}
-  </ul>
+  {{#if model.recommendedProblems}}
+    <ul class="item-columns">
+      {{#each model.recommendedProblems as |problem|}}
+      <li class="item">
+        {{#link-to 'problem' problem.id}}{{problem.title}}{{/link-to}}
+        {{#if isEditing}}
+          <i {{action 'removeProblem' problem}} class="fas fa-minus-circle"></i>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  {{else}}
+      <p class="no-items">This organization does not have any recommended problems yet. Visit the {{#link-to 'problems'}}problems{{/link-to}} page to add some.</p>
+  {{/if}}
 </div>
 
 {{#if isEditing}}
