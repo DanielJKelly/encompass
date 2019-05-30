@@ -8,6 +8,9 @@ const { states } = require('../constants');
 const statesEnum = Object.keys(states);
 
 const models = require('../schemas');
+
+const {isNonEmptyArray} = require('../../utils/objects');
+
 /**
   * @public
   * @class Organization
@@ -30,7 +33,9 @@ const OrganizationSchema = new Schema({
     state: {type: String, enum: statesEnum}
   },
   isNewlyTrashed: {type: Boolean, default: false},
-  isNewlyRestored: { type: Boolean, default: false}
+  isNewlyRestored: { type: Boolean, default: false},
+  removedMembers: [{type: ObjectId, ref: 'User'}], // used for user updates post save
+  addedMembers: [{type: ObjectId, ref: 'User'}], // used for user updates post save
 }, { versionKey: false });
 
 OrganizationSchema.pre('save', function(next) {
@@ -45,6 +50,7 @@ OrganizationSchema.pre('save', function(next) {
 
   this.isNewlyTrashed = didIsTrashedChange && this.isTrashed;
   this.isNewlyRestored = didIsTrashedChange && !this.isTrashed;
+  this.didMembersChange = !isNew && modifiedPaths.includes('members');
 
   next();
 
@@ -79,6 +85,35 @@ OrganizationSchema.post('save', function(org) {
 
       // if user did not belong to any orgs, set as primary org
       let primaryOrgMatch = {_id: {$in: org.members}, organization: null};
+      let update = {$set: {organization: orgId}};
+
+      models.User.updateMany(primaryOrgMatch, update).exec();
+
+    }
+  }
+
+  if (this.didMembersChange) {
+    let removed = this.removedMembers;
+    let added = this.addedMembers;
+    if (isNonEmptyArray(removed)) {
+      // pull org from user
+
+      updateUserOrgs(removed, orgId, '$pull');
+
+      // set primary org to null if this org was their primary org
+      let primaryOrgMatch = {_id: {$in: removed}, organization: orgId};
+      let update = {$set: {organization: null}};
+
+      models.User.updateMany(primaryOrgMatch, update).exec();
+
+    }
+
+    if (isNonEmptyArray(added)) {
+      // add org to user
+      updateUserOrgs(added, orgId, '$addToSet');
+
+      // if user did not belong to any orgs, set as primary org
+      let primaryOrgMatch = {_id: {$in: added}, organization: null};
       let update = {$set: {organization: orgId}};
 
       models.User.updateMany(primaryOrgMatch, update).exec();

@@ -9,6 +9,7 @@ const utils = require('../../middleware/requestHandler');
 const apiUtils = require('./utils');
 
 const { isNonEmptyObject } = require('../../utils/objects');
+const { compareArraysOfObjectIds } = require('../../utils/mongoose');
 
 module.exports.get = {};
 module.exports.post = {};
@@ -229,6 +230,9 @@ const putOrganization = (req, res, next) => {
     return utils.sendError.NotAuthorizedError('You are not authorized to modify this organization', res);
   }
 
+  let originalMemberIds;
+  let newMemberIds = req.body.organization.members;
+
   return apiUtils.isRecordUniqueByStringProp('Organization', req.body.organization.name, 'name', {_id: {$ne: req.params.id}})
   .then((isUnique) => {
     if (!isUnique) {
@@ -238,12 +242,19 @@ const putOrganization = (req, res, next) => {
 
   })
   .then((doc) => {
+    originalMemberIds = doc.members;
     //org to update
     for(let field in req.body.organization) {
       if((field !== '_id') && (field !== undefined)) {
         doc[field] = req.body.organization[field];
       }
     }
+    let [removedMembers, addedMembers ] = compareArraysOfObjectIds(originalMemberIds, newMemberIds);
+
+    doc.removedMembers = removedMembers;
+    doc.addedMembers = addedMembers;
+    doc.lastModifiedBy = user._id;
+
     return doc.save();
   })
   .then((updatedOrg) => {
