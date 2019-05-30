@@ -3,7 +3,7 @@ Encompass.User = DS.Model.extend(Encompass.Auditable, {
   userId: Ember.computed.alias('id'),
   email: DS.attr('string'),
   avatar: DS.attr('string'),
-  organization: DS.belongsTo('organization'),
+  organization: DS.belongsTo('organization', {inverse: null}),
   organizationRequest: DS.attr('string'),
   location: DS.attr('string'),
   username: DS.attr('string'),
@@ -84,5 +84,5 @@ Encompass.User = DS.Model.extend(Encompass.Auditable, {
   collabWorkspaces: DS.attr(),
   hiddenWorkspaces: DS.attr(),
   socketId: DS.attr('string'),
-  organizations: DS.hasMany('organization'),
+  organizations: DS.hasMany('organization', {inverse: null}),
 });
