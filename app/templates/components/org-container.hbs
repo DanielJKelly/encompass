@@ -14,18 +14,46 @@
   <div class="side-flex-item filter-sort">
     <div class="filter-by">
       <span class="fs-label filter">Filter</span><i class="fas fa-filter"></i>
-
+        <span class="hover-menu checkbox">
+          <ul>
+            {{#each-in filterOptions as  |option values|}}
+              <li>
+                <label>
+                  <input type="checkbox" checked={{values.isChecked}} name={{option}} onclick={{action "updateFilter" option}}>
+                  <span>
+                    <span class="radio-text">{{values.label}}</span>
+                  </span>
+                </label>
+              </li>
+            {{/each-in}}
+          </ul>
+        </span>
     </div>
     <div class="sort-by">
-      <span class="fs-label sort">Sort By</span><i class="fas fa-filter"></i>
-
+       <span {{action "toggleSortDirection"}} class="fs-icon sort-direction"><i class={{sortDirectionIcon}}></i></span>
+      <span class="fs-label sort">Sort By <i class="fas fa-sort-down"></i></span>
+        <span class="hover-menu" id="org-sort-param">
+          <ul>
+            {{#each sortOptions as |option|}}
+              {{radio-filter
+                labelName=option.label
+                labelIcon=option.icon
+                inputValue=option.index
+                isChecked=option.isChecked
+                groupName="sort-param"
+                onClick=(action "updateSortParam")
+                groupValue=sortParam
+              }}
+            {{/each}}
+          </ul>
+        </span>
     </div>
   </div>
   <div class="side-flex-item display-description">
     <p>Found {{model.length}} organizations</p>
   </div>
   <div class="side-flex-item list">
-  {{org-list store=store orgs=modelOrgs meta=modelMeta activeOrg=activeOrg}}
+  {{org-list store=store orgs=displayOrgs meta=orgsMeta activeOrg=activeOrg}}
   </div>
 </div>
 

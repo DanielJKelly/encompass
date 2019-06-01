@@ -100,6 +100,56 @@
             flex-start,
             flex-start
           );
+
+          .filter-by {
+            padding: 0 5px 30px 5px;
+            &:hover {
+              cursor: pointer;
+              color: black;
+              .hover-menu {
+                display: inline;
+                margin-left: initial;
+                &::after {
+                  left: 15%;
+                  right: initial;
+                }
+              }
+            }
+          }
+
+          .sort-by {
+            @include flex-container(null, null, row, wrap, center, flex-start, flex-start);
+            padding: 0 5px 30px 5px;
+
+            .fa-sort-down {
+              font-size: 1.1em;
+            }
+            &:hover {
+              cursor: pointer;
+              color: black;
+              .hover-menu {
+                display: inline;
+                margin-left: initial;
+                // &::after {
+                //   left: 15%;
+                //   right: initial;
+                // }
+              }
+              .hover-menu:after {
+                left: 15%;
+                right: initial;
+              }
+            }
+            .fs-label {
+              @include flex-item(2, center, 1 1 auto);
+            }
+
+              .sort-direction {
+                @include flex-item(1, center, initial);
+                margin-right: 5px;
+              }
+
+          }
         }
 
         &.display-description {

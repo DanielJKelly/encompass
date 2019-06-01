@@ -10,7 +10,7 @@
     // return this.get('store').findAll('organization');
     return this.get('store').query('organization', {
       filterBy: {
-        includeTrashed: 1,
+        includeTrashed: 0,
       },
       sortBy: {
         members: -1,

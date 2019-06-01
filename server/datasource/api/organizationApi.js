@@ -51,8 +51,23 @@ function processSortBy(user, defaultParams, requestParams) {
   if (!isNonEmptyObject(requestParams)) {
     return defaultParams;
   }
+  let allowedKeys = {members: 1, name: 1, createDate: 1};
 
   let results = {...defaultParams};
+
+  let field = Object.keys(requestParams)[0];
+
+  if (!allowedKeys[field]) {
+    return results;
+  }
+
+
+  let direction = parseInt(requestParams[field], 10);
+  if (direction !== 1 && direction !== -1) {
+    direction = 1;
+  }
+
+  results = {[field]: direction};
 
   return results;
 }
@@ -81,12 +96,36 @@ const getOrganizations = async function(req, res, next) {
   try {
     let user = req.user;
 
+    let { limit, skip } = req.query;
+
     let [ criteria, sortParam] = processQuery(user, req.query);
 
-    let [results, itemCount] = await Promise.all([
-      apiUtils.sortWorkspaces('Organization', sortParam, req, criteria, excludedFields),
-      models.Organization.count(criteria)
-    ]);
+    let results, itemCount;
+
+    let doCollate = Object.keys(sortParam)[0] === 'name';
+    let doAggregate = Object.keys(sortParam)[0] === 'members';
+
+    if (doCollate) {
+      let collationOptions = {
+        locale: 'en',
+        strength: 1
+      };
+
+      [results, itemCount] = await Promise.all([
+        models.Organization.find(criteria).collation(collationOptions).sort(sortParam).limit(limit).skip(skip).lean().exec(),
+        models.Organization.count(criteria)
+      ]);
+    } else if (doAggregate) {
+      [results, itemCount] = await Promise.all([
+        apiUtils.sortWorkspaces('Organization', sortParam, req, criteria, excludedFields),
+        models.Organization.count(criteria)
+      ]);
+    } else {
+      [results, itemCount] = await Promise.all([
+        models.Organization.find(criteria).sort(sortParam).limit(limit).skip(skip).lean().exec(),
+        models.Organization.count(criteria)]);
+    }
+
 
     const pageCount = Math.ceil(itemCount / req.query.limit);
 
