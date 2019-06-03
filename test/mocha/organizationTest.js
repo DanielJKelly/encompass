@@ -44,9 +44,29 @@ describe('Organization CRUD operations by account type', async function() {
               console.error(err);
             }
             expect(res).to.have.status(200);
-            expect(res.body).to.have.all.keys('organizations');
+            expect(res.body).to.have.all.keys('organizations', 'meta');
             expect(res.body.organizations).to.be.a('array');
             expect(res.body.organizations.length).to.eql(accessibleOrgCount);
+            done();
+          });
+        });
+      });
+
+      describe('/GET organizations by ids', () => {
+        let ids = ['5b4a64a028e4b75919c28512','5b4e4d5f808c7eebc9f9e82c', '5c6f4032b1ccdf96abab26fc'];
+
+        it('should get orgs based on ids query', done => {
+          agent
+          .get(baseUrl)
+          .query({ids})
+          .end((err, res) => {
+            if (err) {
+              console.error(err);
+            }
+            expect(res).to.have.status(200);
+            expect(res.body).to.have.all.keys('organizations', 'meta');
+            expect(res.body.organizations).to.be.a('array');
+            expect(res.body.organizations.length).to.eql(ids.length);
             done();
           });
         });
