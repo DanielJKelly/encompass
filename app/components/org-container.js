@@ -6,6 +6,7 @@ doIncludeTrashedOrgs: false,
 sortParam: null,
 sortDirection: null,
 queriedOrgs: null,
+orgSearchText: '',
 
 modelOrgs: Ember.computed.alias('model.orgs'),
 modelMeta: Ember.computed.alias('model.meta'),
@@ -45,6 +46,15 @@ sortOptions: [
   },
 ],
 
+searchConstraints: {
+  query: {
+    length: {
+      minimum: 0,
+      maximum: 500
+    }
+  }
+},
+
 didReceiveAttrs() {
   this._super(...arguments);
   this.set('queriedOrgs', this.get('modelOrgs'));
@@ -73,15 +83,21 @@ buildSortBy() {
 
 },
 
+buildSearchBy() {
+  return this.get('orgSearchText');
+},
+
 queryOrgs(requestedPage) {
   let filterBy = this.buildFilterBy();
   let sortBy = this.buildSortBy();
+  let searchBy = this.buildSearchBy();
 
   let page = requestedPage || 1;
 
   return this.get('store').query('organization', {
     filterBy,
     sortBy,
+    searchBy,
     page
   })
   .then((results) => {
@@ -128,6 +144,9 @@ actions: {
 
     this.queryOrgs();
   },
+  searchOrgs() {
+    this.queryOrgs();
+  }
 
 }
 });

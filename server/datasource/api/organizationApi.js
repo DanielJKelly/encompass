@@ -27,7 +27,21 @@ module.exports.put = {};
 
 const excludedFields = {isNewlyTrashed: 0, isNewlyRestored: 0};
 
-function processFilterBy(user, defaultFilter, requestFilter) {
+function processSearchBy(query) {
+  if (typeof query !== 'string') {
+    return null;
+  }
+  // currently only support searching by org name
+  query = query.replace(/\s+/g, "");
+
+  if (query.length === 0) {
+    return null;
+  }
+
+  return new RegExp(query.split('').join('\\s*'), 'i');
+}
+
+function processFilterBy(user, defaultFilter, requestFilter, searchBy) {
   // allowed
   if (!isNonEmptyObject(requestFilter)) {
     return defaultFilter;
@@ -42,6 +56,14 @@ function processFilterBy(user, defaultFilter, requestFilter) {
     if (parseInt(includeTrashed, 10) === 1) {
       delete results.isTrashed;
     }
+  }
+
+  console.log('searchBy', searchBy);
+
+  let nameSearchRegex = processSearchBy(searchBy);
+
+  if (nameSearchRegex !== null) {
+    results.name = nameSearchRegex;
   }
 
   return results;
@@ -82,11 +104,10 @@ function processQuery(user, query) {
     return results;
   }
 
-  let { filterBy, sortBy, sortDirection } = query;
+  let { filterBy, sortBy, sortDirection, searchBy } = query;
 
-  results[0] = processFilterBy(user, defaultCriteria, filterBy);
+  results[0] = processFilterBy(user, defaultCriteria, filterBy, searchBy);
   results[1] = processSortBy(user, defaultSortParam, sortBy, sortDirection);
-
   return results;
 }
 

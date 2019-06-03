@@ -9,6 +9,12 @@
   <div class="side-flex-item search">
  {{search-bar
     basePlaceholder="Search organizations"
+    onSearch=(action "searchOrgs")
+    inputValue=orgSearchText
+    doSearchOnInputChange=true
+    doDebounce=true
+    clearSearchResults=(action "clearSearchResults")
+    constraints=searchConstraints
   }}
   </div>
   <div class="side-flex-item filter-sort">
