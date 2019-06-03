@@ -82,10 +82,10 @@ function processQuery(user, query) {
     return results;
   }
 
-  let { filterBy, sortBy } = query;
+  let { filterBy, sortBy, sortDirection } = query;
 
   results[0] = processFilterBy(user, defaultCriteria, filterBy);
-  results[1] = processSortBy(user, defaultSortParam, sortBy);
+  results[1] = processSortBy(user, defaultSortParam, sortBy, sortDirection);
 
   return results;
 }
