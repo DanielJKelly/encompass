@@ -151,6 +151,7 @@ const sortWorkspaces = function(model, sortParam, req, criteria, excludedFields)
   let skipObj = { "$skip": skip };
 
   // Match Obj takes the passed in criteria, as well as checking sortable field exists
+  // TODO: refactor to make more general
   if (Array.isArray(criteria.$and)) {
     criteria.$and.forEach((criterion) => {
       if (criterion.hasOwnProperty('createdBy')) {
@@ -233,6 +234,25 @@ const sortWorkspaces = function(model, sortParam, req, criteria, excludedFields)
         });
       }
     });
+  } else {
+    if (criteria.hasOwnProperty('_id')) {
+      let value = criteria._id;
+      if (value.hasOwnProperty('$in')) {
+        const pruned = cleanObjectIdArray(value.$in, true);
+        if (isNonEmptyArray(pruned)) {
+          value.$in = pruned;
+        } else {
+          delete value.$in;
+        }
+      } else {
+        if (isValidMongoId(value)) {
+          criteria._id = mongoose.Types.ObjectId(value);
+        } else {
+          // bad objectId, delete filter property
+          delete criteria._id;
+        }
+      }
+    }
   }
 
   let matchObj = { "$match" : criteria };

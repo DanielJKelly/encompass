@@ -8,8 +8,8 @@ const userAuth = require('../../middleware/userAuth');
 const utils = require('../../middleware/requestHandler');
 const apiUtils = require('./utils');
 
-const { isNonEmptyObject } = require('../../utils/objects');
-const { compareArraysOfObjectIds } = require('../../utils/mongoose');
+const { isNonEmptyObject, isNonEmptyArray } = require('../../utils/objects');
+const { compareArraysOfObjectIds, isValidMongoId } = require('../../utils/mongoose');
 
 module.exports.get = {};
 module.exports.post = {};
@@ -41,13 +41,20 @@ function processSearchBy(query) {
   return new RegExp(query.split('').join('\\s*'), 'i');
 }
 
-function processFilterBy(user, defaultFilter, requestFilter, searchBy) {
+function processFilterBy(user, defaultFilter, requestFilter, searchBy, ids) {
   // allowed
-  if (!isNonEmptyObject(requestFilter)) {
-    return defaultFilter;
-  }
 
   let results = {...defaultFilter};
+
+  if (isNonEmptyArray(ids)) {
+    results._id = { $in : ids };
+  } else if(isValidMongoId(ids)) {
+    results._id = ids;
+  }
+
+  if (!isNonEmptyObject(requestFilter)) {
+    return results;
+  }
 
   let { includeTrashed } = requestFilter;
 
@@ -57,8 +64,6 @@ function processFilterBy(user, defaultFilter, requestFilter, searchBy) {
       delete results.isTrashed;
     }
   }
-
-  console.log('searchBy', searchBy);
 
   let nameSearchRegex = processSearchBy(searchBy);
 
@@ -104,9 +109,9 @@ function processQuery(user, query) {
     return results;
   }
 
-  let { filterBy, sortBy, sortDirection, searchBy } = query;
+  let { filterBy, sortBy, sortDirection, searchBy, ids } = query;
 
-  results[0] = processFilterBy(user, defaultCriteria, filterBy, searchBy);
+  results[0] = processFilterBy(user, defaultCriteria, filterBy, searchBy, ids);
   results[1] = processSortBy(user, defaultSortParam, sortBy, sortDirection);
   return results;
 }
@@ -117,7 +122,7 @@ const getOrganizations = async function(req, res, next) {
   try {
     let user = req.user;
 
-    let { limit, skip } = req.query;
+    let { limit, skip, } = req.query;
 
     let [ criteria, sortParam] = processQuery(user, req.query);
 
@@ -147,7 +152,6 @@ const getOrganizations = async function(req, res, next) {
         models.Organization.count(criteria)]);
     }
 
-
     const pageCount = Math.ceil(itemCount / req.query.limit);
 
     let currentPage = req.query.page ? req.query.page : 1;
@@ -162,7 +166,7 @@ const getOrganizations = async function(req, res, next) {
     };
     return utils.sendResponse(res, data);
   }catch(err) {
-      console.error(`Error getOrgMembers: ${err}`);
+      console.error(`Error getOrganizations ${err}`);
       console.trace();
       return utils.sendError.InternalError(err, res);
   }
