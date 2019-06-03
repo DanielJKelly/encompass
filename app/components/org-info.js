@@ -165,6 +165,17 @@ Encompass.OrgInfoComponent = Ember.Component.extend(
             null
           );
         }
+
+        this.get('model').set('name', trimmedName);
+
+        return this.get('model').save()
+        .then((updatedOrg) => {
+          this.set('isEditing', false);
+          return this.get('alert').showToast('success', 'Org Updated', 'bottom-end', 3000, false, null);
+        })
+        .catch((err) => {
+          this.handleErrors(err, 'modelUpdateErrors', this.get('model'));
+        });
       },
       updateMembersToAdd(userId, $item) {
         if (!userId) {
