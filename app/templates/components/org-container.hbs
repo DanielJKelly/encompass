@@ -56,10 +56,11 @@
     </div>
   </div>
   <div class="side-flex-item display-description">
-    <p>Found {{model.length}} organizations</p>
+    <p>{{displayDescription}}</p>
   </div>
   <div class="side-flex-item list">
   {{org-list store=store orgs=displayOrgs meta=orgsMeta activeOrg=activeOrg}}
+  {{pagination-control details=orgsMeta initiatePageChange=(action "initiatePageChange") }}
   </div>
 </div>
 

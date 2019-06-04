@@ -25,6 +25,7 @@ Encompass.OrgNewComponent = Ember.Component.extend(Encompass.CurrentUserMixin, E
       newOrg.save()
       .then((org) => {
         this.sendAction('toOrg', org.get('id'));
+        this.parentView.send('addNewOrg', org);
 
         this.get('alert').showToast('success', 'Org created', 'bottom-end', 3000, false, null);
       })

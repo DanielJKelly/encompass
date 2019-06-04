@@ -122,7 +122,8 @@ const getOrganizations = async function(req, res, next) {
   try {
     let user = req.user;
 
-    let { limit, skip, } = req.query;
+    let {limit} = req.query;
+    let  skip = req.skip;
 
     let [ criteria, sortParam] = processQuery(user, req.query);
 

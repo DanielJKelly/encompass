@@ -7,6 +7,7 @@ sortParam: null,
 sortDirection: null,
 queriedOrgs: null,
 orgSearchText: '',
+numPerPage: 25,
 
 modelOrgs: Ember.computed.alias('model.orgs'),
 modelMeta: Ember.computed.alias('model.meta'),
@@ -121,6 +122,30 @@ sortDirectionIcon: function() {
   return '';
 }.property('sortDirection'),
 
+displayDescription: function() {
+  let meta = this.get('orgsMeta');
+
+  if (!meta) {
+    return '';
+  }
+
+
+  let { total, currentPage } = meta;
+
+  if (this.get('displayOrgs.length') === 0) {
+    return 'No organizations found.';
+  }
+
+  let numPerPage = this.get('numPerPage');
+
+  let rangeMin = (currentPage - 1) * numPerPage + 1;
+  let rangeMax = this.get('displayOrgs.length') + rangeMin - 1;
+  let noun = total > 1 ? 'organizations' : 'organization';
+
+  return `Displaying ${rangeMin} - ${rangeMax} of ${total} ${noun}`;
+
+}.property('orgsMeta', 'displayOrgs.[]'),
+
 actions: {
   setActiveOrg(org) {
     this.set('activeOrg', org);
@@ -130,7 +155,6 @@ actions: {
     this.queryOrgs();
   },
   updateSortParam(index) {
-    console.log('param', index);
     this.set('sortParam',this.get('sortOptions.' + index));
     this.queryOrgs();
   },
@@ -146,6 +170,21 @@ actions: {
   },
   searchOrgs() {
     this.queryOrgs();
+  },
+  clearSearchResults() {
+    this.set('orgSearchText', '');
+    this.queryOrgs();
+  },
+  initiatePageChange(page) {
+    // this.set('isChangingPage', true);
+    this.queryOrgs(page);
+  },
+  addNewOrg(org) {
+    let orgs = this.get('queriedOrgs');
+    if (orgs) {
+      orgs.addObject(org);
+      this.set('orgsMeta.total', this.get('orgsMeta.total') + 1);
+    }
   }
 
 }
